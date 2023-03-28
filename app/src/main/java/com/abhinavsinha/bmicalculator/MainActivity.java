@@ -2,14 +2,13 @@ package com.abhinavsinha.bmicalculator;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import java.text.DecimalFormat;
 
 public class MainActivity extends AppCompatActivity {
@@ -50,33 +49,64 @@ public class MainActivity extends AppCompatActivity {
         calculateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                calculateBMI();
+                double bmi = calculateBMI();
+
+                String sAge = age.getText().toString();
+                int age = Integer.parseInt(sAge);
+
+                if (age < 18) displayGuidance(bmi);
+                else displayResult(bmi);
             }
         });
     }
 
-    private void calculateBMI() {
-        String sAge = age.getText().toString();
+    @SuppressLint("SetTextI18n")
+    private void displayGuidance(double bmi) {
+        DecimalFormat decimalFormatter = new DecimalFormat("0.00");
+        String resultBMI = decimalFormatter.format(bmi);
+
+        if (radioButtonMale.isChecked()) {
+            resultText.setText(resultBMI + " - As your age is under 18, consult your doctor for healthy range for boys");
+        } else if (radioButtonFemale.isChecked()) {
+            resultText.setText(resultBMI + " - As your age is under 18, consult your doctor for healthy range for girls");
+        } else {
+            resultText.setText(resultBMI + " - As your age is under 18, consult your doctor for healthy range");
+        }
+    }
+
+    private double calculateBMI() {
         String sFeet = feet.getText().toString();
         String sInches = inches.getText().toString();
         String sWeight = weight.getText().toString();
 
         // converting strings to integers
-        int iAge = Integer.parseInt(sAge);
         int iWeight = Integer.parseInt(sWeight);
 
-        int totalHeightInInches = (Integer.parseInt(sFeet)*12) + Integer.parseInt(sInches);
+        int totalHeightInInches = (Integer.parseInt(sFeet) * 12) + Integer.parseInt(sInches);
 
         // convert height into meters
         double totalHeightInMeters = totalHeightInInches * 0.0254;
 
         // BMI formula
-        double bmi = iWeight / (totalHeightInMeters * totalHeightInMeters);
-
+        return iWeight / (totalHeightInMeters * totalHeightInMeters);
+    }
+    private void displayResult(double bmi) {
         DecimalFormat decimalFormatter = new DecimalFormat("0.00");
         String resultBMI = decimalFormatter.format(bmi);
+        String fullResultString;
+
+        if (bmi < 18.5) {
+            // underweight
+            fullResultString = resultBMI + " - You're underweight.";
+        } else if (bmi > 25) {
+            // overweight
+            fullResultString = resultBMI + " - You're overweight.";
+        } else {
+            // healthy
+            fullResultString = resultBMI + " - You're healthy!";
+        }
 
         // set value of resultText
-        resultText.setText(resultBMI);
+        resultText.setText(fullResultString);
     }
 }
